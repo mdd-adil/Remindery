@@ -1,6 +1,13 @@
 const router = require('express').Router();
-const { registerUser } = require('../Controllers/register');
+const { sendRegistrationOTP, verifyAndRegister, resendRegistrationOTP } = require('../Controllers/register');
 
-router.post('/', registerUser);
+// Step 1: Send OTP to phone number
+router.post('/send-otp', sendRegistrationOTP);
+
+// Step 2: Verify OTP and complete registration
+router.post('/verify', verifyAndRegister);
+
+// Resend OTP if needed
+router.post('/resend-otp', resendRegistrationOTP);
 
 module.exports = router;

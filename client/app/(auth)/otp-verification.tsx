@@ -12,13 +12,15 @@ import {
 } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 
+const API_URL = 'http://localhost:3000'; // Replace with your actual API URL
 const OTP_LENGTH = 6;
 const RESEND_TIMEOUT = 30;
 
 export default function OTPVerificationScreen() {
-  const { phoneNumber, password } = useLocalSearchParams<{
+  const { phoneNumber, password, username } = useLocalSearchParams<{
     phoneNumber: string;
     password: string;
+    username: string;
   }>();
 
   const [otp, setOtp] = useState<string[]>(new Array(OTP_LENGTH).fill(''));
@@ -94,19 +96,27 @@ export default function OTPVerificationScreen() {
     setIsLoading(true);
 
     try {
-      // TODO: Replace with your actual API call to verify OTP and complete signup
-      // Example:
-      // const response = await fetch('YOUR_API_URL/verify-otp', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({ phoneNumber, password, otp: otpValue }),
-      // });
+      const response = await fetch(`${API_URL}/register/verify`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          phoneNumber,
+          password,
+          username,
+          otp: otpValue,
+        }),
+      });
 
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      const data = await response.json();
 
-      // For demo: accept any 6-digit OTP
-      // In production, verify against your backend
+      if (!response.ok) {
+        Alert.alert('Error', data.message || 'Verification failed');
+        return;
+      }
+
+      // TODO: Store the token from data.token for authenticated requests
+      // Example: await AsyncStorage.setItem('token', data.token);
+
       Alert.alert('Success', 'Account created successfully!', [
         {
           text: 'OK',
@@ -114,7 +124,7 @@ export default function OTPVerificationScreen() {
         },
       ]);
     } catch (error) {
-      Alert.alert('Error', 'Invalid OTP. Please try again.');
+      Alert.alert('Error', 'Verification failed. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -127,16 +137,19 @@ export default function OTPVerificationScreen() {
     setResendTimer(RESEND_TIMEOUT);
 
     try {
-      // TODO: Replace with your actual API call to resend OTP
-      // Example:
-      // await fetch('YOUR_API_URL/resend-otp', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({ phoneNumber }),
-      // });
+      const response = await fetch(`${API_URL}/register/resend-otp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phoneNumber }),
+      });
 
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 500));
+      const data = await response.json();
+
+      if (!response.ok) {
+        Alert.alert('Error', data.message || 'Failed to resend OTP');
+        setCanResend(true);
+        return;
+      }
 
       Alert.alert('Success', 'OTP has been resent to your phone');
     } catch (error) {

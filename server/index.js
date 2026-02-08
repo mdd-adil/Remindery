@@ -8,6 +8,7 @@ const connectDB = require('./database/mongoConnect');
 const registerRoute = require('./Routes/registerRoute');
 const loginRoute = require('./Routes/loginRoute');
 const reminderRoute = require('./Routes/addReminderRoute');
+const forgotPasswordRoute = require('./Routes/forgotPasswordRoute');
 const isLoggedIn = require('./middleware/isLoggedin');
 const PORT = process.env.PORT || 3000;
 
@@ -23,6 +24,7 @@ app.get('/api', (req, res) => {
 });
 app.use('/register', registerRoute);
 app.use('/login', loginRoute);
+app.use('/forgot-password', forgotPasswordRoute);
 app.use('/addReminder', isLoggedIn,require('./Routes/addReminderRoute'));
 
 // Start server - Listen on all network interfaces for mobile device access

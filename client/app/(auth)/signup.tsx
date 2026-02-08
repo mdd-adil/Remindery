@@ -13,11 +13,13 @@ import {
 } from 'react-native';
 import { Link, router } from 'expo-router';
 
+const API_URL = 'http://localhost:3000'; 
+
 export default function SignUpScreen() {
   const [phoneNumber, setPhoneNumber] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const[name, setName] = useState('');
+  const [name, setName] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -29,6 +31,11 @@ export default function SignUpScreen() {
 
   const handleSignUp = async () => {
     // Validate inputs
+    if (!name.trim()) {
+      Alert.alert('Error', 'Please enter your username');
+      return;
+    }
+
     if (!phoneNumber.trim()) {
       Alert.alert('Error', 'Please enter your phone number');
       return;
@@ -57,23 +64,26 @@ export default function SignUpScreen() {
     setIsLoading(true);
 
     try {
-      // TODO: Replace with your actual API call to send OTP
-      // Example:
-      // const response = await fetch('YOUR_API_URL/send-otp', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({ phoneNumber }),
-      // });
+      const response = await fetch(`${API_URL}/register/send-otp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phoneNumber }),
+      });
 
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      const data = await response.json();
 
-      // Navigate to OTP verification screen with phone number and password
+      if (!response.ok) {
+        Alert.alert('Error', data.message || 'Failed to send OTP');
+        return;
+      }
+
+      // Navigate to OTP verification screen with user details
       router.push({
         pathname: '/(auth)/otp-verification',
         params: {
           phoneNumber,
           password,
+          username: name,
         },
       });
     } catch (error) {
